@@ -1,0 +1,377 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/ECS",
+            "MemoryUtilization",
+            "ServiceName",
+            "snowplow-scala-stream-collector",
+            "ClusterName",
+            "${ecs_cluster_name}"
+          ],
+          [
+            ".",
+            "CPUUtilization",
+            ".",
+            ".",
+            ".",
+            "."
+          ]
+        ],
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "eu-central-1",
+        "title": "collector - cpu & memory",
+        "setPeriodToTimeRange": true,
+        "stat": "Average",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 6,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          [
+            "AWS/ECS",
+            "MemoryUtilization",
+            "ServiceName",
+            "snowplow-scala-stream-enrich",
+            "ClusterName",
+            "snowplow"
+          ],
+          [
+            ".",
+            "CPUUtilization",
+            ".",
+            ".",
+            ".",
+            "."
+          ]
+        ],
+        "region": "eu-central-1",
+        "title": "stream-enricher - cpu & memory",
+        "stat": "Average",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          [
+            "AWS/ECS",
+            "MemoryUtilization",
+            "ServiceName",
+            "snowplow-s3-loader",
+            "ClusterName",
+            "snowplow"
+          ],
+          [
+            ".",
+            "CPUUtilization",
+            ".",
+            ".",
+            ".",
+            "."
+          ]
+        ],
+        "region": "eu-central-1",
+        "title": "s3-loader cpu & memory",
+        "stat": "Average",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 18,
+      "y": 0,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": true,
+        "liveData": true,
+        "period": 60,
+        "metrics": [
+          [
+            "AWS/ApplicationELB",
+            "HTTPCode_Target_5XX_Count",
+            "LoadBalancer",
+            "${alb_arn_suffix}",
+            {
+              "period": 1,
+              "stat": "Sum",
+              "color": "#d62728"
+            }
+          ],
+          [
+            ".",
+            "HTTPCode_Target_4XX_Count",
+            ".",
+            ".",
+            {
+              "period": 1,
+              "stat": "Sum",
+              "color": "#bcbd22"
+            }
+          ],
+          [
+            ".",
+            "HTTPCode_Target_3XX_Count",
+            ".",
+            ".",
+            {
+              "period": 1,
+              "stat": "Sum",
+              "color": "#98df8a"
+            }
+          ],
+          [
+            ".",
+            "HTTPCode_Target_2XX_Count",
+            ".",
+            ".",
+            {
+              "period": 1,
+              "stat": "Sum",
+              "color": "#2ca02c"
+            }
+          ]
+        ],
+        "region": "eu-central-1",
+        "title": "Load balancer responses per minute",
+        "yAxis": {
+          "left": {
+            "min": 0
+          }
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Records",
+            "StreamName",
+            "snowplow-good-stream"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-good-stream #PutRecords.Records",
+        "stacked": false,
+        "stat": "Sum",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 6,
+      "y": 6,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Records",
+            "StreamName",
+            "snowplow-good-stream-enriched"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-good-stream-enriched #PutRecords.Records",
+        "stacked": false,
+        "stat": "Sum",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 6,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Records",
+            "StreamName",
+            "snowplow-good-stream-enriched-pii"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-good-stream-enriched-pii #PutRecords.Records",
+        "stacked": false,
+        "stat": "Sum",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 12,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Bytes",
+            "StreamName",
+            "snowplow-good-stream"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-good-stream #PutRecords.Bytes",
+        "stacked": false,
+        "stat": "Sum",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 6,
+      "y": 12,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Bytes",
+            "StreamName",
+            "snowplow-good-stream-enriched"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-good-stream-enriched #PutRecords.Bytes",
+        "stacked": false,
+        "stat": "Sum",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 12,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Bytes",
+            "StreamName",
+            "snowplow-good-stream-enriched-pii"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-good-stream-enriched-pii #PutRecords.Bytes",
+        "stacked": false,
+        "period": 60,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 18,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Records",
+            "StreamName",
+            "snowplow-bad-stream"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-bad-stream #PutRecords.Records",
+        "stacked": false,
+        "stat": "Sum",
+        "period": 60
+      }
+    },
+    {
+      "type": "metric",
+      "x": 6,
+      "y": 18,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Records",
+            "StreamName",
+            "snowplow-bad-stream-enriched"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-bad-stream-enriched #PutRecords.Records",
+        "stacked": false,
+        "period": 60,
+        "stat": "Sum"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12,
+      "y": 18,
+      "width": 6,
+      "height": 6,
+      "properties": {
+        "metrics": [
+          [
+            "AWS/Kinesis",
+            "PutRecords.Records",
+            "StreamName",
+            "snowplow-bad-stream-s3-loader-enriched"
+          ]
+        ],
+        "region": "eu-central-1",
+        "view": "timeSeries",
+        "title": "snowplow-bad-stream-s3-loader-enriched\n #PutRecords.Records",
+        "stacked": false,
+        "period": 60,
+        "stat": "Sum"
+      }
+    }
+  ]
+}

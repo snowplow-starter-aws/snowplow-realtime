@@ -14,12 +14,12 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name               = "snowplow-collector-ecs-task-role"
+  name               = "snowplow-stream-enrich-ecs-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name               = "snowplow-collector-ecs-execution-role"
+  name               = "snowplow-stream-enrich-ecs-execution-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
@@ -34,7 +34,7 @@ resource "aws_iam_role_policy_attachment" "execution" {
 }
 
 resource "aws_iam_policy" "ecs-execution" {
-  name   = "snowplow-collector-ecs-execution"
+  name   = "snowplow-stream-enrich-ecs-execution"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -49,20 +49,7 @@ resource "aws_iam_policy" "ecs-execution" {
         "logs:DescribeLogStreams",
         "logs:DescribeLogGroups",
         "logs:CreateLogStream",
-        "logs:CreateLogGroup",
-        "ecr:GetAuthorizationToken",
-                "ecr:BatchCheckLayerAvailability",
-                "ecr:GetDownloadUrlForLayer",
-                "ecr:GetRepositoryPolicy",
-                "ecr:DescribeRepositories",
-                "ecr:ListImages",
-                "ecr:DescribeImages",
-                "ecr:BatchGetImage",
-                "ecr:GetLifecyclePolicy",
-                "ecr:GetLifecyclePolicyPreview",
-                "ecr:ListTagsForResource",
-                "ecr:DescribeImageScanFindings"
-
+        "logs:CreateLogGroup"
       ],
       "Resource": "*"
     }
@@ -71,13 +58,56 @@ resource "aws_iam_policy" "ecs-execution" {
 EOF
 }
 
-
 resource "aws_iam_policy" "ecs-task" {
-  name   = "snowplow-collector-ecs-task"
+  name   = "snowplow-stream-enrich-ecs-task"
   policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
+    {
+    "Effect": "Allow",
+      "Action": [
+        "kinesis:*"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },{
+      "Effect": "Allow",
+        "Action": [
+          "s3:*"
+        ],
+        "Resource": [
+          "*"
+        ]
+      },{
+      "Effect": "Allow",
+        "Action": [
+          "dynamodb:*"
+        ],
+        "Resource": [
+          "*"
+        ]
+      },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kinesis:DescribeStream",
+        "kinesis:GetShardIterator",
+        "kinesis:GetRecords",
+        "kinesis:ListShards"
+      ],
+      "Resource": [
+        "${var.collector_stream_good_arn}"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+          "kinesis:ListStreams"
+      ],
+      "Resource": "*"
+    },
     {
       "Effect": "Allow",
       "Action": [
@@ -86,18 +116,36 @@ resource "aws_iam_policy" "ecs-task" {
         "kinesis:PutRecords"
       ],
       "Resource": [
-        "${var.collector_stream_good_arn}",
-        "${var.collector_stream_bad_arn}"
+        "${var.enricher_stream_good_arn}",
+        "${var.enricher_stream_bad_arn}",
+        "${var.enricher_stream_good_pii_arn}"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:CreateTable",
+        "dynamodb:DescribeTable",
+        "dynamodb:Scan",
+        "dynamodb:GetItem",
+        "dynamodb:PutItem",
+        "dynamodb:UpdateItem",
+        "dynamodb:DeleteItem"
+      ],
+      "Resource": [
+        "arn:aws:dynamodb:${var.region}:${var.account_id}:table/${var.enricher_state_table}"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricData"
+      ],
+      "Resource": "*"
     }
   ]
 }
 EOF
-}
-
-resource "aws_iam_role_policy_attachment" "execution-ext" {
-  role       = aws_iam_role.ecs_execution_role.name
-  policy_arn = aws_iam_policy.ecs-execution.arn
 }
 
 resource "aws_iam_role_policy_attachment" "task-ext" {
@@ -105,6 +153,10 @@ resource "aws_iam_role_policy_attachment" "task-ext" {
   policy_arn = aws_iam_policy.ecs-task.arn
 }
 
+resource "aws_iam_role_policy_attachment" "execution-ext" {
+  role       = aws_iam_role.ecs_execution_role.name
+  policy_arn = aws_iam_policy.ecs-execution.arn
+}
 
 resource "aws_ecs_task_definition" "task" {
 
@@ -112,9 +164,10 @@ resource "aws_ecs_task_definition" "task" {
   memory             = var.task_memory
   execution_role_arn = aws_iam_role.ecs_execution_role.arn
   task_role_arn      = aws_iam_role.ecs_task_role.arn
-  family             = "snowplow-collector-task-definition"
+  family             = "snowplow-scala-stream-enrich-task-definition"
   requires_compatibilities = [
   "EC2"]
+
   container_definitions = <<EOF
 [
   {
@@ -126,25 +179,11 @@ resource "aws_ecs_task_definition" "task" {
         "awslogs-create-group": "true",
         "awslogs-group": "/ecs/snowplow",
         "awslogs-region": "eu-central-1",
-        "awslogs-stream-prefix": "collector"
+        "awslogs-stream-prefix": "enrich"
       }
     },
-    "name": "snowplow-scala-stream-collector",
-    "portMappings": [
-      {
-        "containerPort": 8080,
-        "hostPort": 0,
-        "protocol": "tcp"
-      }
-    ],
-    "environment": [
-      {"name": "COLLECTOR_COOKIE_DOMAIN_1", "value": "${var.collector_cookie_domain1}"},
-      {"name": "COLLECTOR_COOKIE_DOMAIN_2", "value": "${var.collector_cookie_domain2}"},
-      {"name": "FALLBACK_DOMAIN", "value": "${var.collector_cookie_fallback_domain}"}
-    ]
-
+    "name": "snowplow-scala-stream-enrich"
   }
 ]
 EOF
-
 }

@@ -140,8 +140,6 @@ resource "aws_kinesis_firehose_delivery_stream" "bad_stream" {
       log_stream_name = "S3Delivery"
     }
   }
-
-
 }
 
 
@@ -197,3 +195,28 @@ resource "aws_kinesis_firehose_delivery_stream" "bad_stream_pii_loader_enriched"
   }
 }
 
+
+resource "aws_kinesis_firehose_delivery_stream" "good_stream_enriched" {
+  name        = "good-stream-enriched"
+  destination = "s3"
+
+  kinesis_source_configuration {
+    kinesis_stream_arn = aws_kinesis_stream.good-enriched.arn
+    role_arn           = aws_iam_role.firehose-role.arn
+  }
+
+
+  s3_configuration {
+    buffer_interval = 60
+    buffer_size     = 1
+    role_arn        = aws_iam_role.firehose-role.arn
+    bucket_arn      = var.snowplow_bucket_arn
+    prefix          = "good-stream-enriched/"
+
+    cloudwatch_logging_options {
+      enabled         = true
+      log_group_name  = "/aws/kinesisfirehose/good-stream-s3-enriched"
+      log_stream_name = "S3Delivery"
+    }
+  }
+}

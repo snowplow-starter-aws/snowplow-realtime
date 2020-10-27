@@ -36,3 +36,9 @@ variable "task_memory" {
 
 variable "max_count" {}
 variable "min_count" {}
+variable "desired_count" {}
+
+variable "collector_cookie_domain1" {}
+variable "collector_cookie_domain2" {}
+variable "collector_cookie_fallback_domain" {}
+
