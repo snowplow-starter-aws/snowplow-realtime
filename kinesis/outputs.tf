@@ -18,9 +18,9 @@ output "enriched_good_pii_arn" {
   value = aws_kinesis_stream.good-enriched-pii.arn
 }
 
-output "s3_loader_enriched_bad_arn" {
-  value = aws_kinesis_stream.s3-loader-bad-enriched.arn
-}
+//output "s3_loader_enriched_bad_arn" {
+//  value = aws_kinesis_stream.s3-loader-bad-enriched.arn
+//}
 
 
 output "collector_good_name" {
@@ -43,6 +43,6 @@ output "enriched_good_pii_name" {
   value = aws_kinesis_stream.good-enriched-pii.name
 }
 
-output "s3_loader_enriched_bad_name" {
-  value = aws_kinesis_stream.s3-loader-bad-enriched.name
-}
+//output "s3_loader_enriched_bad_name" {
+//  value = aws_kinesis_stream.s3-loader-bad-enriched.name
+//}
