@@ -1,4 +1,6 @@
 variable "snowplow_bucket_arn" {}
+variable "account_id" {}
+variable "region" {}
 
 variable "number_of_shards_good_stream" {
   default = 1

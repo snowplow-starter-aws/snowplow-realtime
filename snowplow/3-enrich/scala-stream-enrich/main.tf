@@ -1,3 +1,7 @@
+locals {
+  name = "snowplow-stream-enrich"
+}
+
 resource "aws_ecs_service" "service" {
 
   depends_on = [
@@ -5,7 +9,7 @@ resource "aws_ecs_service" "service" {
     aws_iam_role.ecs_execution_role
   ]
 
-  name            = "snowplow-scala-stream-enrich"
+  name            = local.name
   cluster         = var.ecs_cluster_id
   task_definition = aws_ecs_task_definition.task.arn
   desired_count   = var.desired_count

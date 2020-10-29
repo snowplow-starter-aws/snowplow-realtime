@@ -1,9 +1,9 @@
 locals {
-  function_name = "tsv-to-json-transformer"
+  function_name = "json-to-postgres-loader"
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
-  name = "lambda-tsv-to-json-transformer-role"
+  name = "${local.function_name}-role"
 
   assume_role_policy = <<EOF
 {
@@ -24,7 +24,7 @@ EOF
 
 
 resource "aws_iam_policy" "tsv-to-json-transformer-policy" {
-  name = "lambda-tsv-to-json-transformer-policy"
+  name = "${local.function_name}-policy"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -36,6 +36,11 @@ resource "aws_iam_policy" "tsv-to-json-transformer-policy" {
         "logs:PutLogEvents"
       ],
       "Resource": "arn:aws:logs:*:*:*",
+      "Effect": "Allow"
+    },
+    {
+      "Action": "s3:GetObject",
+      "Resource": ["${var.trigger_s3_bucket_arn}/*"],
       "Effect": "Allow"
     },
     {
@@ -52,6 +57,7 @@ resource "aws_iam_policy" "tsv-to-json-transformer-policy" {
         "iam:ListRoles",
         "iam:PassRole",
         "kms:ListAliases",
+        "logs:*",
         "tag:GetResources",
         "xray:PutTelemetryRecords",
         "xray:PutTraceSegments"
@@ -81,7 +87,7 @@ resource "aws_lambda_function" "tsv-to-json-transformer" {
 
   runtime = "python3.7"
 
-  timeout = 60
+  timeout = 120
   # Default is 3s, this 300s = 5min
   memory_size = 128
   # Default is 128MB
@@ -90,15 +96,17 @@ resource "aws_lambda_function" "tsv-to-json-transformer" {
     mode = "Active"
   }
 
+  environment {
+    variables = {
+      DATABASE = var.dwh_database
+      HOST = var.dwh_host
+      PORT = var.dwh_port
+      USERNAME = var.dwh_username
+      PASSWORD = var.dwh_password
+    }
+
+  }
   tags = {
     s3-key = var.deploy_s3_key
   }
-
-}
-
-resource "aws_lambda_permission" "lambda_permission" {
-  statement_id = "AllowAnyFirehoseInvoke"
-  action = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.tsv-to-json-transformer.function_name
-  principal = "firehose.amazonaws.com"
 }

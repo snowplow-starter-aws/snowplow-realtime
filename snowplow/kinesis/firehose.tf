@@ -20,7 +20,7 @@ EOF
 
 
 resource "aws_iam_policy" "firehose-one-sizes-fits-all" {
-  name   = "kinesis-firehose-one-size-fits-all-policy"
+  name = "kinesis-firehose-one-size-fits-all-policy"
   policy = <<EOF
 {
     "Version": "2012-10-17",
@@ -58,7 +58,7 @@ resource "aws_iam_policy" "firehose-one-sizes-fits-all" {
                 "logs:PutLogEvents"
             ],
             "Resource": [
-                "arn:aws:logs:eu-central-1:320039544529:log-group:/aws/kinesisfirehose/*:log-stream:*"
+                "arn:aws:logs:eu-central-1:${var.account_id}:log-group:/aws/kinesisfirehose/*:log-stream:*"
             ]
         },
         {
@@ -67,13 +67,23 @@ resource "aws_iam_policy" "firehose-one-sizes-fits-all" {
                 "kms:Decrypt"
             ],
             "Resource": [
-                "arn:aws:kms:eu-central-1:320039544529:key/*"
+                "arn:aws:kms:eu-central-1:${var.account_id}:key/*"
             ],
             "Condition": {
                 "StringEquals": {
-                    "kms:ViaService": "kinesis.eu-central-1.amazonaws.com"
+                    "kms:ViaService": "kinesis.${var.region}.amazonaws.com"
                 }
             }
+        },
+        {
+           "Effect": "Allow",
+           "Action": [
+               "lambda:InvokeFunction",
+               "lambda:GetFunctionConfiguration"
+           ],
+           "Resource": [
+               "*"
+           ]
         }
     ]
 }
@@ -81,7 +91,7 @@ EOF
 }
 
 resource "aws_iam_policy" "write-to-bad-stream-prefix" {
-  name   = "snowplow-kinesis-firehose-bad-stream"
+  name = "snowplow-kinesis-firehose-bad-stream"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -102,41 +112,41 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "read-only-kinesis" {
-  role       = aws_iam_role.firehose-role.name
+  role = aws_iam_role.firehose-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonKinesisReadOnlyAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "one-size-fits-all" {
-  role       = aws_iam_role.firehose-role.name
+  role = aws_iam_role.firehose-role.name
   policy_arn = aws_iam_policy.firehose-one-sizes-fits-all.arn
 }
 
 
 resource "aws_iam_role_policy_attachment" "write-to-bad-stream-prefix" {
-  role       = aws_iam_role.firehose-role.name
+  role = aws_iam_role.firehose-role.name
   policy_arn = aws_iam_policy.write-to-bad-stream-prefix.arn
 }
 
 resource "aws_kinesis_firehose_delivery_stream" "bad_stream" {
-  name        = "bad-stream"
+  name = "bad-stream"
   destination = "s3"
 
   kinesis_source_configuration {
     kinesis_stream_arn = aws_kinesis_stream.bad.arn
-    role_arn           = aws_iam_role.firehose-role.arn
+    role_arn = aws_iam_role.firehose-role.arn
   }
 
   s3_configuration {
     buffer_interval = 60
-    buffer_size     = 1
-    role_arn        = aws_iam_role.firehose-role.arn
-    bucket_arn      = var.snowplow_bucket_arn
-    prefix          = "bad-stream/"
+    buffer_size = 1
+    role_arn = aws_iam_role.firehose-role.arn
+    bucket_arn = var.snowplow_bucket_arn
+    prefix = "bad-stream/"
 
 
     cloudwatch_logging_options {
-      enabled         = true
-      log_group_name  = "/aws/kinesisfirehose/bad-stream"
+      enabled = true
+      log_group_name = "/aws/kinesisfirehose/bad-stream"
       log_stream_name = "S3Delivery"
     }
   }
@@ -144,77 +154,51 @@ resource "aws_kinesis_firehose_delivery_stream" "bad_stream" {
 
 
 resource "aws_kinesis_firehose_delivery_stream" "bad_stream_enriched" {
-  name        = "bad-stream-enriched"
+  name = "bad-stream-enriched"
   destination = "s3"
 
 
   kinesis_source_configuration {
     kinesis_stream_arn = aws_kinesis_stream.bad-enriched.arn
-    role_arn           = aws_iam_role.firehose-role.arn
+    role_arn = aws_iam_role.firehose-role.arn
   }
 
 
   s3_configuration {
     buffer_interval = 60
-    buffer_size     = 1
-    role_arn        = aws_iam_role.firehose-role.arn
-    bucket_arn      = var.snowplow_bucket_arn
-    prefix          = "bad-stream-enriched/"
+    buffer_size = 1
+    role_arn = aws_iam_role.firehose-role.arn
+    bucket_arn = var.snowplow_bucket_arn
+    prefix = "bad-stream-enriched/"
 
     cloudwatch_logging_options {
-      enabled         = true
-      log_group_name  = "/aws/kinesisfirehose/bad-stream-enriched"
+      enabled = true
+      log_group_name = "/aws/kinesisfirehose/bad-stream-enriched"
       log_stream_name = "S3Delivery"
     }
   }
 }
 
-//resource "aws_kinesis_firehose_delivery_stream" "bad_stream_pii_loader_enriched" {
-//  name        = "bad-stream-s3-loader-enriched"
-//  destination = "s3"
-//
-//
-//  kinesis_source_configuration {
-//    kinesis_stream_arn = aws_kinesis_stream.s3-loader-bad-enriched.arn
-//    role_arn           = aws_iam_role.firehose-role.arn
-//  }
-//
-//
-//  s3_configuration {
-//    buffer_interval = 60
-//    buffer_size     = 1
-//    role_arn        = aws_iam_role.firehose-role.arn
-//    bucket_arn      = var.snowplow_bucket_arn
-//    prefix          = "bad-stream-s3-loader-enriched/"
-//
-//    cloudwatch_logging_options {
-//      enabled         = true
-//      log_group_name  = "/aws/kinesisfirehose/bad-stream-s3-loader-enriched"
-//      log_stream_name = "S3Delivery"
-//    }
-//  }
-//}
-
 
 resource "aws_kinesis_firehose_delivery_stream" "good_stream_enriched" {
-  name        = "good-stream-enriched"
+  name = "good-stream-enriched"
   destination = "extended_s3"
 
   kinesis_source_configuration {
     kinesis_stream_arn = aws_kinesis_stream.good-enriched.arn
-    role_arn           = aws_iam_role.firehose-role.arn
+    role_arn = aws_iam_role.firehose-role.arn
   }
 
   extended_s3_configuration {
     buffer_interval = 60
-    buffer_size     = 1
-    role_arn        = aws_iam_role.firehose-role.arn
-    bucket_arn      = var.snowplow_bucket_arn
-    prefix          = "good-stream-enriched/"
+    buffer_size = 1
+    role_arn = aws_iam_role.firehose-role.arn
+    bucket_arn = var.snowplow_bucket_arn
+    prefix = "good-stream-enriched/"
 
     cloudwatch_logging_options {
-      enabled         = true
-      log_group_name  = "/aws/kinesisfirehose/good-stream-s3-enriched"
+      enabled = true
+      log_group_name = "/aws/kinesisfirehose/good-stream-s3-enriched"
       log_stream_name = "S3Delivery"
     }
 
@@ -225,30 +209,17 @@ resource "aws_kinesis_firehose_delivery_stream" "good_stream_enriched" {
         type = "Lambda"
 
         parameters {
-          parameter_name  = "LambdaArn"
+          parameter_name = "LambdaArn"
           parameter_value = "${var.lambda_tsv_to_json_transformer_arn}:$LATEST"
         }
+        parameters {
+          parameter_name = "BufferSizeInMBs"
+          parameter_value = "1"
+        }
+
       }
     }
   }
-
-  //
-  //  s3_configuration {
-  //    buffer_interval = 60
-  //    buffer_size     = 1
-  //    role_arn        = aws_iam_role.firehose-role.arn
-  //    bucket_arn      = var.snowplow_bucket_arn
-  //    prefix          = "good-stream-enriched/"
-  //
-  //
-  //
-  //    cloudwatch_logging_options {
-  //      enabled         = true
-  //      log_group_name  = "/aws/kinesisfirehose/good-stream-s3-enriched"
-  //      log_stream_name = "S3Delivery"
-  //    }
-  //
-  //  }
 
 
 }

@@ -6,35 +6,35 @@ data "aws_iam_policy_document" "ecs_task_assume_role" {
     principals {
       type = "Service"
       identifiers = [
-      "ecs-tasks.amazonaws.com"]
+        "ecs-tasks.amazonaws.com"]
     }
     actions = [
-    "sts:AssumeRole"]
+      "sts:AssumeRole"]
   }
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name               = "snowplow-stream-enrich-ecs-task-role"
+  name = "snowplow-stream-enrich-ecs-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name               = "snowplow-stream-enrich-ecs-execution-role"
+  name = "snowplow-stream-enrich-ecs-execution-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "task" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.ecs_task_role.id
+  role = aws_iam_role.ecs_task_role.id
 }
 
 resource "aws_iam_role_policy_attachment" "execution" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-  role       = aws_iam_role.ecs_execution_role.id
+  role = aws_iam_role.ecs_execution_role.id
 }
 
 resource "aws_iam_policy" "ecs-execution" {
-  name   = "snowplow-stream-enrich-ecs-execution"
+  name = "snowplow-stream-enrich-ecs-execution"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -59,7 +59,7 @@ EOF
 }
 
 resource "aws_iam_policy" "ecs-task" {
-  name   = "snowplow-stream-enrich-ecs-task"
+  name = "snowplow-stream-enrich-ecs-task"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -149,24 +149,24 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "task-ext" {
-  role       = aws_iam_role.ecs_task_role.name
+  role = aws_iam_role.ecs_task_role.name
   policy_arn = aws_iam_policy.ecs-task.arn
 }
 
 resource "aws_iam_role_policy_attachment" "execution-ext" {
-  role       = aws_iam_role.ecs_execution_role.name
+  role = aws_iam_role.ecs_execution_role.name
   policy_arn = aws_iam_policy.ecs-execution.arn
 }
 
 resource "aws_ecs_task_definition" "task" {
 
-  cpu                = var.task_cpu
-  memory             = var.task_memory
+  cpu = var.task_cpu
+  memory = var.task_memory
   execution_role_arn = aws_iam_role.ecs_execution_role.arn
-  task_role_arn      = aws_iam_role.ecs_task_role.arn
-  family             = "snowplow-scala-stream-enrich-task-definition"
+  task_role_arn = aws_iam_role.ecs_task_role.arn
+  family = local.name
   requires_compatibilities = [
-  "EC2"]
+    "EC2"]
 
   container_definitions = <<EOF
 [
@@ -179,10 +179,10 @@ resource "aws_ecs_task_definition" "task" {
         "awslogs-create-group": "true",
         "awslogs-group": "/ecs/snowplow",
         "awslogs-region": "eu-central-1",
-        "awslogs-stream-prefix": "enrich"
+        "awslogs-stream-prefix": "${local.name}"
       }
     },
-    "name": "snowplow-scala-stream-enrich"
+    "name": "${local.name}"
   }
 ]
 EOF
