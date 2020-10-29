@@ -7,3 +7,9 @@ variable "dwh_host" {}
 variable "dwh_port" {}
 variable "dwh_username" {}
 variable "dwh_password" {}
+
+variable "security_group_id" {}
+variable "subnet_ids" {
+  type = list(string)
+}
+variable "region" {}

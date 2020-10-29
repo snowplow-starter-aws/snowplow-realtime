@@ -24,7 +24,7 @@ EOF
 
 
 resource "aws_iam_policy" "tsv-to-json-transformer-policy" {
-  name = "${local.function_name}-policy"
+  name   = "${local.function_name}-policy"
   policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -70,20 +70,28 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "lambda" {
-  role = aws_iam_role.iam_for_lambda.name
+  role       = aws_iam_role.iam_for_lambda.name
   policy_arn = aws_iam_policy.tsv-to-json-transformer-policy.arn
 }
+
+resource "aws_iam_role_policy_attachment" "lambda-in-vpc" {
+  role       = aws_iam_role.iam_for_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+
+
 
 
 resource "aws_lambda_function" "tsv-to-json-transformer" {
   depends_on = [
     aws_iam_role_policy_attachment.lambda,
   ]
-  s3_bucket = var.deploy_s3_bucket
-  s3_key = var.deploy_s3_key
+  s3_bucket     = var.deploy_s3_bucket
+  s3_key        = var.deploy_s3_key
   function_name = local.function_name
-  role = aws_iam_role.iam_for_lambda.arn
-  handler = "app.lambda_handler"
+  role          = aws_iam_role.iam_for_lambda.arn
+  handler       = "app.lambda_handler"
 
   runtime = "python3.7"
 
@@ -96,13 +104,20 @@ resource "aws_lambda_function" "tsv-to-json-transformer" {
     mode = "Active"
   }
 
+  vpc_config {
+    security_group_ids = [
+    var.security_group_id]
+    subnet_ids = var.subnet_ids
+  }
+
   environment {
     variables = {
       DATABASE = var.dwh_database
-      HOST = var.dwh_host
-      PORT = var.dwh_port
+      HOST     = var.dwh_host
+      PORT     = var.dwh_port
       USERNAME = var.dwh_username
       PASSWORD = var.dwh_password
+      IN_VPC   = true
     }
 
   }

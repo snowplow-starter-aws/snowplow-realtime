@@ -216,6 +216,12 @@ resource "aws_kinesis_firehose_delivery_stream" "good_stream_enriched" {
           parameter_name = "BufferSizeInMBs"
           parameter_value = "1"
         }
+        parameters {
+          parameter_name = "BufferIntervalInSeconds"
+          parameter_value = "60"
+        }
+
+
 
       }
     }
