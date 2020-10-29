@@ -5,7 +5,7 @@ provider "aws" {
 }
 
 resource "aws_lb_target_group" "target-group" {
-  name        = "snowplow-collector"
+  name        = local.name
   port        = 80
   protocol    = "HTTP"
   vpc_id      = var.vpc_id

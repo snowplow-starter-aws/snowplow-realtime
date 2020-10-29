@@ -112,7 +112,7 @@ resource "aws_ecs_task_definition" "task" {
   memory             = var.task_memory
   execution_role_arn = aws_iam_role.ecs_execution_role.arn
   task_role_arn      = aws_iam_role.ecs_task_role.arn
-  family             = "snowplow-collector-task-definition"
+  family             = local.name
   requires_compatibilities = [
   "EC2"]
   container_definitions = <<EOF
@@ -126,10 +126,10 @@ resource "aws_ecs_task_definition" "task" {
         "awslogs-create-group": "true",
         "awslogs-group": "/ecs/snowplow",
         "awslogs-region": "eu-central-1",
-        "awslogs-stream-prefix": "collector"
+        "awslogs-stream-prefix": "${local.name}"
       }
     },
-    "name": "snowplow-scala-stream-collector",
+    "name": "${local.name}",
     "portMappings": [
       {
         "containerPort": 8080,

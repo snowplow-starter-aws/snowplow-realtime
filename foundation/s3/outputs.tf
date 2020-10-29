@@ -7,9 +7,9 @@ output "tracking_arn" {
 }
 
 output "artifacts_bucket" {
-  value = aws_s3_bucket.tracking.bucket
+  value = aws_s3_bucket.lambda-artifacts.bucket
 }
 
 output "artifacts_arn" {
-  value = aws_s3_bucket.tracking.arn
+  value = aws_s3_bucket.lambda-artifacts.arn
 }
