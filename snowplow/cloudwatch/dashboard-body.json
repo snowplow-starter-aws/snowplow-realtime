@@ -349,29 +349,6 @@
         "period": 60,
         "stat": "Sum"
       }
-    },
-    {
-      "type": "metric",
-      "x": 12,
-      "y": 18,
-      "width": 6,
-      "height": 6,
-      "properties": {
-        "metrics": [
-          [
-            "AWS/Kinesis",
-            "PutRecords.Records",
-            "StreamName",
-            "snowplow-bad-stream-s3-loader-enriched"
-          ]
-        ],
-        "region": "eu-central-1",
-        "view": "timeSeries",
-        "title": "snowplow-bad-stream-s3-loader-enriched\n #PutRecords.Records",
-        "stacked": false,
-        "period": 60,
-        "stat": "Sum"
-      }
     }
   ]
 }

@@ -59,14 +59,3 @@ resource "aws_kinesis_stream" "good-enriched-pii" {
     "OutgoingBytes",
   ]
 }
-
-//resource "aws_kinesis_stream" "s3-loader-bad-enriched" {
-//  name             = "snowplow-bad-stream-s3-loader-enriched"
-//  shard_count      = var.number_of_shards_good_bad_stream_s3_loader_enriched
-//  retention_period = 24
-//
-//  shard_level_metrics = [
-//    "IncomingBytes",
-//    "OutgoingBytes",
-//  ]
-//}
