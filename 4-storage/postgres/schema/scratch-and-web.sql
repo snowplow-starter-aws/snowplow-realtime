@@ -1,3 +1,0 @@
-CREATE SCHEMA scratch;
-CREATE SCHEMA web;
-
