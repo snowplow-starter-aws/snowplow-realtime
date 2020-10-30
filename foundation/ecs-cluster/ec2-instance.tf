@@ -2,16 +2,16 @@ resource "aws_iam_role" "container_instance_ec2" {
   name               = "snowplow-ecs-ec2-instance-profile"
   assume_role_policy = <<EOF
 {
-    "Version": "2012-10-17",
-    "Statement": [
+  "Version": "2012-10-17",
+  "Statement": [
     {
-        "Action": "sts:AssumeRole",
-        "Effect": "Allow",
-        "Principal": {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
         "Service": "ec2.amazonaws.com"
-        }
+      }
     }
-    ]
+  ]
 }
 EOF
 }
@@ -135,7 +135,6 @@ resource "aws_autoscaling_group" "container_instance" {
   enabled_metrics       = var.enabled_metrics
   protect_from_scale_in = true
 
-
   vpc_zone_identifier = var.private_subnets
 
   tag {
@@ -143,6 +142,5 @@ resource "aws_autoscaling_group" "container_instance" {
     value               = "snowplow-ecs-cluster-instance"
     propagate_at_launch = true
   }
-
 
 }

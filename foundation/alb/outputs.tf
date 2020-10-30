@@ -10,11 +10,9 @@ output "alb_dns_name" {
   value = aws_lb.alb-external.dns_name
 }
 
-
 output "alb_zone_id" {
   value = aws_lb.alb-external.zone_id
 }
-
 
 output "arn_suffix" {
   value = aws_lb.alb-external.arn_suffix

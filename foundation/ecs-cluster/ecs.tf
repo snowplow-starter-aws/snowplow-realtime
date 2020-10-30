@@ -36,8 +36,7 @@ resource "aws_iam_service_linked_role" "ecs" {
 
 resource "aws_ecs_capacity_provider" "cp" {
   depends_on = [aws_iam_service_linked_role.ecs]
-  //  name = "${var.name}-cluster-managed-scaling-${var.capacity_provider_suffix}"
-  name = "snowplow-cluster-managed-scaling"
+  name       = "snowplow-cluster-managed-scaling"
 
 
   auto_scaling_group_provider {
