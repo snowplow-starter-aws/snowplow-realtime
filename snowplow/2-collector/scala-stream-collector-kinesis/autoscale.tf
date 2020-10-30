@@ -2,11 +2,16 @@ locals {
   resource_id = "service/${var.ecs_cluster_name}/${aws_ecs_service.service.name}"
 }
 
+//TODO terraform and use instead of auto generated
+//resource "aws_iam_service_linked_role" "ecs-autoscaling" {
+//  aws_service_name = "ecs.application-autoscaling.amazonaws.com"
+//}
+
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = var.max_count
   min_capacity       = var.min_count
   resource_id        = local.resource_id
-  role_arn           = aws_iam_role.ecs_task_role.arn
+  role_arn           = "arn:aws:iam::098961484923:role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
